@@ -1,0 +1,294 @@
+<!doctype html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- SORTABLE -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/js/sortable.js" type="text/javascript" charset="utf-8"></script>
+   <!--  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/sortable/0.8.0/css/sortable-theme-light.css"> -->
+    
+    <!-- CSS FOR YA BWAYS -->
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/mainpage.css') }}">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.6/themes/default.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.6/themes/default.date.css">
+    <title>Plays by {{ playData[0].artist }}</title>
+</head>
+
+<body>
+
+    <div id='title'><h1>Plays by <h1 id='artist-name'>@{{ playData[0].artist }}</h1> </h1></div>
+    <div id='chart-wrapper'>
+        <div id='chart_div'></div>
+    </div>
+
+
+    <h2>Click to sort...</h2>
+    <!-- data-sortable is what sortable js uses to find shit to sort -->
+    <table data-sortable>
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Song</th>
+                <th id="time-th">Time</th>
+
+            </tr>
+        </thead>
+
+        <tbody>
+        <!-- Can pass in any play data (multiple musicians etc) to this table -->
+            {% if playData %}
+                {% for item in playData %}
+                  <tr class='data-row'><td class='artist'>{{ item.artist }}</td>&nbsp; <td class='song'>{{ item.song }}</td>&nbsp; <td class='time'>{{ item.time }}</td></tr>
+                {% endfor %}
+            {% else %}
+                <p>No data was passed in</p>
+            {% endif %}
+        </tbody>
+    </table>
+    
+    <div id='date-limiter-wrapper'>
+    <br><br><br>
+    <h2 id='choose-date-limits'>Choose Date Limits</h2>       
+        <form id='pickdate-form'>
+            <span>From: &nbsp;</span><input id='start-date' class="datepicker"></input>
+            <span>To: &nbsp;</span><input id='end-date' class="datepicker"></input>
+            <button id='limit-dates'>Go</button>
+        </form>
+        <p id="from-to-agreement"></p>
+    </div>
+    <!-- <svg class="chart"></svg> -->
+
+    <!-- CDN LINKS -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8" ></script>
+   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.10/d3.min.js" type="text/javascript" charset="utf-8" ></script> -->
+   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.6/picker.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.6/picker.date.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+
+    <script>
+    // Load the Visualization API and the piechart package.
+    google.load('visualization', '1.1', {'packages':['bar']});
+    // google.load('visualization', '1.0', {'packages':['corechart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.setOnLoadCallback(drawHist);
+
+    function drawHist(){
+            
+        // Get the data from the html table 
+        dateData = getDates(); 
+
+        var dataRows = binByWeeks(dateData);
+
+        var data = new google.visualization.arrayToDataTable(dataRows);
+
+        // Set chart options
+        var options = {'title': 'Plays per week (starting)',
+                       'width': $(window).width() * 0.95, //Fill the window
+                       'height':$(window).width() * 0.4,
+                       'legend': {'textStyle': {fontName: "futura"} },
+                        'hAxis': { 'titleTextStyle' : {fontName: "futura"} },
+                        'titleTextStyle': {fontName: "futura"}
+                   };
+
+        // Instantiate and draw our chart, passing in some options.
+        // var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+        // chart.draw(data, options);
+        var chart = new google.charts.Bar(document.getElementById('chart_div'));
+        chart.draw(data, google.charts.Bar.convertOptions(options));
+
+    }
+
+    function getDates(){
+
+        var dates = [];
+
+       /*The data is now everything from the table*/
+        $(".time").each(function(index, element){            
+            
+            var rowdata = {
+                song: $(this).siblings(".song").text(),
+                artist: $(this).siblings(".artist").text(),
+                time: $(this).text(),
+            };
+
+            dates.push( rowdata );
+        });
+
+        //String 2 Date
+        for (var i =0; i < dates.length; i++){
+            dates[i].time = moment(dates[i].time, 'YYYY-MM-DD HH:mm:ss').toDate(); //use a parsing library for the benefit of other browsers that arent chrome
+        }
+        
+        //Sort the dates
+        dates.sort(function(a,b){
+            return a.time - b.time;
+        });
+
+        return dates;
+    }
+
+
+    function binByWeeks(dateData){
+
+        /*Get names for the header*/
+        var unique = getUniqueSongNames(dateData);
+        var names = Object.keys(unique);
+
+        /*Create the header*/
+        var headerRow = ['Date']; //date is always position 0 
+        for (var i = 0; i < names.length; i++){
+            headerRow.push( names[i] );
+        }
+        
+        /*Create the 2d array used by the goglechart*/
+        var dataRows = [];
+        dataRows.push(headerRow);
+
+         /*Bin by weeks - starting sunday*/
+        var nextSunday = createForwardSunday(dateData[0].time);    
+
+        /*Store the earliest sunday*/    
+        dataRows.push(createBlankDataRow(headerRow, dateData[0]));
+
+        /*Iterate over dates, incrementing appropriate bins*/
+        for (var i = 0; i < dateData.length; i++){
+           
+           /*If the current date is in the next bin -> ADD A NEW BIN Wowowow*/
+            if (dateData[i].time > nextSunday){
+                
+                var sundayRef = lastSunday(dateData[i].time);
+                dataRows.push(createBlankDataRow(headerRow, dateData[i]));
+                
+                /*Set new next sunday*/
+                nextSunday = createForwardSunday(dateData[i].time);
+            }
+
+            /*Get the index of the song from the header (is this efficient)*/
+            var songIdx = getSongIndex(headerRow, dateData[i]);
+            dataRows[dataRows.length-1][songIdx]++; //Increment that.
+
+        }
+        return dataRows;
+    }
+
+    function getSongIndex(header, curRow){
+        var name = curRow.song;
+
+        for (var i = 0; i < header.length; i++){
+            if (header[i] === name){
+                return i;
+            }
+        }
+    }
+
+    function createBlankDataRow(header, curRow){
+
+        var row = [];
+        row.push( formatDate( lastSunday(curRow.time) ) );
+
+        for (var i = 1; i < header.length; i++){
+            row.push(0); //An initial count of 0 for each song.
+        }
+
+        return row;
+    }
+
+    function getUniqueSongNames(arr){
+        var counts = {};
+
+        for(var i = 0; i< arr.length; i++) {
+            var num = arr[i].song;
+            counts[num] = counts[num] ? counts[num]+1 : 1;
+        }
+
+        return counts;
+    }
+
+    function lastSunday(dateObj) {
+        var temp = new Date(dateObj); //Gotta do a deep copy.
+          // var d = new Date(s.substring(0,4), s.substring(4,6) - 1, s.substring(6));
+          temp.setDate(temp.getDate() - temp.getDay());
+          return temp;
+    }
+
+    function createForwardSunday(date){
+        var nextSunday = new Date(date);
+        nextSunday  = lastSunday(nextSunday);
+        nextSunday.setDate(nextSunday.getDate() + 7);
+        nextSunday.setHours(23,59,59);
+        return nextSunday;
+    }
+
+    function formatDate(date){
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June",
+                "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+                ];
+
+        return date.getDate() + " " + monthNames[date.getMonth()] + " " + date.getFullYear();
+    }
+
+
+
+    /*~~~~~LOL~~~~~*/
+    $(window).load(function(){
+
+        checkForData();
+
+       var picker = $('.datepicker').pickadate({format: 'yyyy/mm/dd'});
+
+       $("#limit-dates").click(function(event){
+            event.preventDefault();
+
+            var baseLocation = "http://prestige.turnup.club/plays/"+ $(".artist:first").text();
+
+            if ($("#start-date").val().length === 0 && $("#end-date").val().length === 0){
+                window.location.href = baseLocation
+            }
+
+            var start = $("#start-date").val().replace(/\//g,"-"); //replace for conversinoot date (\/ is an escaped slash, g = global replcae)
+            var end = $("#end-date").val().replace(/\//g,"-");            
+
+            var startDate = new Date(start);
+            var endDate = new Date(end);
+            console.log(start, 'vs', end);
+
+            if (endDate - startDate > 0){
+                // console.log("http://prestige.turnup.club/plays/"+ $(".artist:first").text() + "/" + start + "/" + end);
+                window.location.href = baseLocation + "/" + start + "/" + end;
+
+            } else {
+
+                 $.get("http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC", function(data){                   
+                    $("#from-to-agreement").html('<h1>NOPE:</h1> <img src=' + data.data.image_url +' alt="soz">');
+                });
+                
+            }
+
+           
+       });
+
+    });
+
+    function checkForData(){
+        if ( $(".artist:first").text().length === 0){ //This is the flag
+            $(document.body).html("<h1 id='grow'>Bruh, no data.</h1><button id='back-button' onclick=goBack()>Back</button>");
+            setInterval(function(){
+                var size = parseInt($("#grow").css('font-size'));
+                $("#grow").css({'font-size': (size+1) + "px" });
+            }, 300);
+        }
+    }
+
+    function goBack(){
+        window.history.back();
+    }
+
+    </script>
+
+</body>

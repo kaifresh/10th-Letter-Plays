@@ -1,0 +1,23 @@
+accessed database! <_mysql.connection open to 'database.turnup.club' at 12756d0>
+newest id was: 676725162260189184 
+
+{'header': ['song', 'artist', 'feat', 'raw', 'time', 'created_at', 'id', 'duplicate'], 'rows': (('Mess Around', 'cagetheelephant', '*Feature Artist Not Found*', '.@cagetheelephant - Mess Around [22:26]', datetime.datetime(2015, 12, 15, 22, 26, 6), datetime.datetime(2015, 12, 15, 11, 27, 6), 676725162260189184L, 0),)} 
+************************
+
+{'artist': u'wavves', 'created_at': datetime.datetime(2015, 12, 15, 11, 56, 6, tzinfo=<UTC>), 'song': u'My Head Hurts', 'raw': u'.@wavves - My Head Hurts [22:55]', 'time': datetime.datetime(2015, 12, 15, 22, 55, 6, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676732463192932352} 
+
+{'artist': u'LittleMaymusic', 'created_at': datetime.datetime(2015, 12, 15, 11, 52, 34, tzinfo=<UTC>), 'song': u'Home', 'raw': u'.@LittleMaymusic - Home [22:52]', 'time': datetime.datetime(2015, 12, 15, 22, 52, 34, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676731574067548160} 
+
+{'artist': u'the_prodigy', 'created_at': datetime.datetime(2015, 12, 15, 11, 46, 33, tzinfo=<UTC>), 'song': u'Diesel Power', 'raw': u'.@the_prodigy - Diesel Power [22:45]', 'time': datetime.datetime(2015, 12, 15, 22, 45, 33, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676730056102776832} 
+
+{'artist': u'sethsentry', 'created_at': datetime.datetime(2015, 12, 15, 11, 42, 25, tzinfo=<UTC>), 'song': u'Dumb', 'raw': u'.@sethsentry - Dumb [22:42]', 'time': datetime.datetime(2015, 12, 15, 22, 42, 25, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676729018025172992} 
+
+{'artist': u'Baauer', 'created_at': datetime.datetime(2015, 12, 15, 11, 38, 40, tzinfo=<UTC>), 'song': u'GoGo!', 'raw': u'.@Baauer - GoGo! [22:38]', 'time': datetime.datetime(2015, 12, 15, 22, 38, 40, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676728072201183232} 
+
+{'artist': u'Rolling Blackouts', 'created_at': datetime.datetime(2015, 12, 15, 11, 32, 35, tzinfo=<UTC>), 'song': u'Clean Slate', 'raw': u'Rolling Blackouts - Clean Slate [22:31]', 'time': datetime.datetime(2015, 12, 15, 22, 31, 35, tzinfo=<DstTzInfo 'Australia/Sydney' AEDT+11:00:00 DST>), 'feat': '*Feature Artist Not Found*', 'id': 676726544581177345} 
+
+tweets extracted.... 6
+
+~ ~ Batch Insert Tweets ~ ~
+
+successfully inserted plays into DB

@@ -1,0 +1,26 @@
+body {
+     background-color: #d0e4fe;
+     font-family: futura, helvetica;
+}
+
+.bar {
+    background-color: #ff00ff;
+    content: ' ';   
+}
+
+td {
+    /*border-collapse: separate;*/
+    /*border-spacing: 20em;*/
+}
+
+th {
+    font-size: 20px;
+}
+
+#chart-wrapper {
+    margin: 0 auto;
+}
+
+#title{
+    text-align: center;
+}
